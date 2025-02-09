@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petitions List</title>
+    <link rel="stylesheet" href="/forindex.css">
+</head>
+<style>
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+</style>
+<body>
+    <div class="container">
+        <h1>Petitions List</h1>
+        
+        <!-- Форма для создания новой петиции -->
+        <form action="/create-petition" method="POST">
+            <label for="question">Petition Question:</label>
+            <textarea id="question" name="question" rows="2" required></textarea>
+
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" rows="4" required></textarea>
+
+            <button type="submit">Create Petition</button>
+        </form>
+        
+        <% if (petitionsList.length > 0) { %>
+            <ul class="petition-list">
+                <% petitionsList.forEach(petition => { %>
+                    <li class="petition-item">
+                        <a href="/petition/<%= petition._id %>" class="petition-link">
+                            <h3><%= petition.question %></h3>
+                        </a>
+                        <p class="description"><%= petition.description.substring(0, 100) %>...</p>
+                        <p><strong>Votes:</strong> Yes: <%= petition.answers.yes %>, No: <%= petition.answers.no %></p>
+                    </li>
+                <% }); %>
+            </ul>
+        <% } else { %>
+            <p>No petitions available.</p>
+        <% } %>
+    </div>
+</body>
+</html>

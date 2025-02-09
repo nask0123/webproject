@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Создать петицию</title>
+    <link rel="stylesheet" href="/forindex.css">
+</head>
+<body>
+    <h1>Создать новую петицию</h1>
+    <form action="/create-petition" method="POST">
+        <label>Название:</label><br>
+        <input type="text" name="title" required><br><br>
+        
+        <label>Описание:</label><br>
+        <textarea name="description" required></textarea><br><br>
+
+        <button type="submit">Создать</button>
+    </form>
+    <br>
+    <a href="index">Назад</a>
+</body>
+</html>

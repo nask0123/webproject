@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petition Details</title>
+    <link rel="stylesheet" href="/forindex.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Petition Details</h1>
+        
+        <!-- Вопрос петиции -->
+        <h2><%= petition.question %></h2>
+        
+        <!-- Описание петиции -->
+        <p class="description"><%= petition.description %></p>
+
+        <!-- Отображение голосов -->
+        <p><strong>Votes:</strong> Yes: <%= petition.answers.yes %>, No: <%= petition.answers.no %></p>
+        
+        <!-- Проверка: голосовал ли пользователь -->
+        <% if (userVoted) { %>
+            <p><strong>You have already voted on this petition.</strong></p>
+        <% } else { %>
+            <!-- Форма для голосования -->
+            <form action="/vote" method="POST">
+                <input type="hidden" name="petitionId" value="<%= petition._id %>">
+                <button type="submit" name="answer" value="yes">Vote Yes</button>
+                <button type="submit" name="answer" value="no">Vote No</button>
+            </form>
+        <% } %>
+
+        <br>
+        <a href="/index">⬅ Back to Petition List</a>
+    </div>
+</body>
+</html>
