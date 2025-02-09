@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 400px;
+    }
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .button {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        text-decoration: none;
+        color: #fff;
+        background-color: #3498db;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+    }
+    .button:hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+    }
+    .edit-button {
+        background-color: #f39c12;
+    }
+    .edit-button:hover {
+        background-color: #e67e22;
+    }
+    .delete-button {
+        background-color: #ff0000;
+    }
+    .delete-button:hover {
+        background-color: #ff0000;
+    }
+</style>
+<body>
+    <div class="container"></div>
+    <a href="/books/add"><button class="button">Add Book</button></a>
+    <a href = "/"><button class = "button">Back</button></a>
+</body>
+<script>
+    document.addEventListener("DOMContentLoaded", async function () {
+        try {
+            let res = await fetch('http://localhost:8069/books/get');
+            let container = document.querySelector('.container');
+            container.innerHTML = '';
+            let books = await res.json();
+            
+            let i = 1;
+            books.forEach(element => {
+                let book = document.createElement('div');
+                book.innerHTML = `
+                    <h2>TITLE: ${element.title}</h2>
+                    <p>AUTHOR: ${element.author}</p>
+                    <p>PUBLISHED AT: ${element.year}</p>
+                    <p>GENRE: ${element.genre}</p>
+                    <button class="button edit-button" onclick="editBook(${i})">Edit</button>
+                    <button class="button delete-button" onclick="deleteBook(${i})">Delete</button>
+                `;
+                container.appendChild(book);
+                i += 1;
+            });
+        } catch (error) {
+            console.error("Error fetching books:", error);
+        }
+    });
+
+    async function editBook(bookId) {
+        let newTitle = prompt("Enter new title:");
+        let newAuthor = prompt("Enter new author:");
+        let newYear = prompt("Enter new publication year:");
+        let newGenre = prompt("Enter new genre:");
+        
+        if (newTitle && newAuthor && newYear && newGenre) {
+            try {
+                let response = await fetch(`/books/delete/${bookId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: newTitle,
+                        author: newAuthor,
+                        year: newYear,
+                        genre: newGenre
+                    })
+                });
+
+                message = await response.json();
+                
+                alert(message.message);
+                location.reload();
+            } catch (error) {
+                console.error("Error updating book:", error);
+            }
+        }
+    }
+
+    async function deleteBook(bookId)
+    {
+        try{
+            let responce = await fetch(`/books/delete/${bookId}`,
+        {
+            method: 'delete',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        });
+        message = await responce.json();
+        alert(message.message);
+        location.reload();
+    }catch(err){
+        alert(err);
+    }
+    }
+</script>
+</html>

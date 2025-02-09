@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 400px;
+    }
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+    }
+    input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    /* input[type="submit"] {
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    } */
+    /* input[type="submit"]:hover {
+        background-color: #0056b3;
+    } */
+    button{
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    button:hover{
+        background-color: #0056b3;
+    }
+    .result {
+        text-align: center;
+        margin-top: 20px;
+        color: #333;
+    }
+</style>
+<body>
+    <div class="container">
+        <!-- <form > -->
+            <h2>Create a Book</h2>
+            <label for="title">Input Book title</label>
+            <input type="text" id="title" name="title">
+            <label for="author">Input Book author</label>
+            <input type="text" id="author" name="author">
+            <label for="year">Input Book year</label>
+            <input type="text" id="year" name="year">
+            <label for="genre">Input Book genre</label>
+            <input type="text" id="genre" name="genre">
+            <button onclick="send()">Submit</button>
+        <!-- </form> -->
+        <div class="result">
+            <h3 id = "Message"> Result:  </h3>
+        </div>
+        <a href = "/books/"><button class = "button">Back</button></a>
+    </div>
+</body>
+<script>
+async function send() {
+    let title = document.getElementById('title').value;
+    let author = document.getElementById('author').value;
+    let year = document.getElementById('year').value;
+    let genre = document.getElementById('genre').value;
+    
+    const bookData = {
+        title: title,
+        author: author,
+        year: year,
+        genre: genre
+    }
+
+    try{            
+        let res  = await fetch('/books/post', {
+            method: 'POST',
+            headers: {  
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(
+                bookData
+            )
+        });
+
+        message = await res.json();
+        document.getElementById('Message').innerHTML =JSON.stringify(message);
+        // if (res.ok) {             
+        //     const data = res.json();
+        //     document.getElementById('Message').innerHTML = message;
+        // } else {
+        //     const error = await response.json();
+        //     document.getElementById('Message').innerText = res.message;
+        // }
+     } catch (error) {
+        document.getElementById('Message').innerText = error;
+}
+}
+</script>
+</html>

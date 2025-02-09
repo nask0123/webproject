@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 400px;
+    }
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    input[type="text"] {
+        width: 20%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    .button {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        text-decoration: none;
+        color: #fff;
+        background-color: #3498db;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+    }
+    .button:hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+    }
+</style>
+<body>
+    <h2>Search for Author</h2>
+            <label for="author">Input author</label>
+            <input type="text" id="author" name="author">
+            <button class = "button" onclick="send()">Submit</button>
+            
+    <div class="container"></div>
+    <a href = "/"><button class = "button">Back</button></a>
+        
+</body>
+<script>
+    async function send() {
+        try {
+            let author = document.getElementById('author').value;
+            let res = await fetch(`/api/authors/${author}`);
+            let data = await res.json();
+            let container = document.querySelector('.container');
+            container.innerHTML = '';
+            
+            let i = 1;
+            Object.values(data).forEach(element => {
+                let author = document.createElement('div');
+                author.innerHTML = `  <h2>Author: ${element.name}</h2>
+                    <p>Date: ${element.date}</p>
+                    <p>top WORK: ${element.topWork}</p>
+                   `
+                container.appendChild(author);
+            });
+        } catch (error) {
+            console.error("Error fetching authors:", error);
+        }
+    };
+
+</script>
+</html>
