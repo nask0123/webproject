@@ -1,10 +1,17 @@
-require('dotenv').config(); // Загрузка переменных окружения
+require('dotenv').config(); // Load environment variables
 
 const express = require('express');
 const mongoose = require('mongoose');
 const ejs = require('ejs');
 const cors = require('cors');
 const session = require('express-session');
+const multer = require('multer');
+const path = require('path');
+
+
+const storage = multer.memoryStorage(); // Store in memory, not disk
+const upload = multer({ storage: storage });
+
 
 const app = express();
 
@@ -16,36 +23,46 @@ app.use(express.static("public"));
 
 app.set('view engine', 'ejs');
 
-// Настройка сессии для отслеживания голосов пользователей
+// Session setup for tracking votes
 app.use(session({
     secret: 'secret-key',
     resave: false,
     saveUninitialized: true
 }));
 
-// Подключение к MongoDB
+// Connect to MongoDB
 mongoose.connect("mongodb://localhost:27017/petition", {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
-.then(() => console.log('Connected to MongoDB'))
-.catch(err => console.error('MongoDB Connection Error', err));
+.then(() => console.log('✅ Connected to MongoDB'))
+.catch(err => console.error('❌ MongoDB Connection Error:', err));
 
-// Модель петиции
+// Petition Schema
 const petitionSchema = new mongoose.Schema({
     question: String,
-    description: { type: String, default: "No description available" }, // Добавлен default
+    description: String,
     answers: {
         yes: { type: Number, default: 0 },
         no: { type: Number, default: 0 }
     },
-    votedUsers: [{ type: String }]
+    votedUsers: [{ type: String }], 
+    image: String // Store only image filename, not Base64
 });
-
 
 const Petition = mongoose.model('Petition', petitionSchema);
 
-// 📌 Главная страница со списком петиций
+// // ✅ Setup Multer for image uploads (stores images in /public/uploads)
+// const storage = multer.diskStorage({
+//     destination: "./public/uploads/",
+//     filename: (req, file, cb) => {
+//         cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+//     }
+// });
+
+// const upload = multer({ storage });
+
+// ✅ Route: Home Page - Show all petitions
 app.get('/index', async (req, res) => {
     try {
         const petitions = await Petition.find();
@@ -54,44 +71,52 @@ app.get('/index', async (req, res) => {
             userVotes: req.session.userVotes || {}
         });
     } catch (err) {
-        console.error('Error fetching petitions:', err);
+        console.error('❌ Error fetching petitions:', err);
         res.status(500).send('Internal Server Error');
     }
 });
 
-// 📌 Форма для создания новой петиции
+// ✅ Route: Show new petition form
 app.get('/new', (req, res) => {
     res.render('new');
 });
 
-// 📌 Создание новой петиции
-app.post('/create-petition', async (req, res) => {
+// ✅ Route: Create new petition
+app.post('/create-petition', upload.single('image'), async (req, res) => {
     const { question, description } = req.body;
+    let imageBase64 = '';
+
+    // ✅ Check if a file was uploaded
+    if (req.file && req.file.buffer) {
+        imageBase64 = req.file.buffer.toString('base64'); // Convert to Base64
+    }
 
     const newPetition = new Petition({
         question,
-        description, 
+        description,
         answers: { yes: 0, no: 0 },
-        votedUsers: []
+        votedUsers: [],
+        image: imageBase64 // Store only Base64 data
     });
 
     try {
         await newPetition.save();
-        res.redirect(`/petition/${newPetition._id}`);
+        res.redirect('/index');
     } catch (err) {
-        console.error('Error creating petition:', err);
+        console.error('❌ Error creating petition:', err);
         res.status(500).send('Internal Server Error');
     }
 });
 
 
-// 📌 Страница отдельной петиции
+
+// ✅ Route: View single petition
 app.get('/petition/:id', async (req, res) => {
     try {
         const petition = await Petition.findById(req.params.id);
 
         if (!petition) {
-            return res.status(404).send("Петиция не найдена");
+            return res.status(404).send("Petition not found");
         }
 
         res.render('petition', { 
@@ -99,12 +124,12 @@ app.get('/petition/:id', async (req, res) => {
             userVoted: req.session.userVotes?.[petition._id] || false
         });
     } catch (err) {
-        console.error('Error fetching petition:', err);
+        console.error('❌ Error fetching petition:', err);
         res.status(500).send('Internal Server Error');
     }
 });
 
-// 📌 Голосование
+// ✅ Route: Voting logic
 app.post('/vote', async (req, res) => {
     const { petitionId, answer } = req.body;
     const userId = req.sessionID;
@@ -133,11 +158,11 @@ app.post('/vote', async (req, res) => {
 
         res.redirect(`/petition/${petitionId}`);
     } catch (err) {
-        console.error('Error voting:', err);
+        console.error('❌ Error voting:', err);
         res.status(500).send('Internal Server Error');
     }
 });
 
-// Запуск сервера
+// ✅ Start the server
 const PORT = 5002;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

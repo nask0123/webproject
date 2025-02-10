@@ -18,20 +18,39 @@
         <h1>Petitions List</h1>
         
         <!-- Форма для создания новой петиции -->
-        <form action="/create-petition" method="POST">
+        <form action="/create-petition" method="POST" enctype="multipart/form-data">
             <label for="question">Petition Question:</label>
             <textarea id="question" name="question" rows="2" required></textarea>
-
+        
             <label for="description">Description:</label>
             <textarea id="description" name="description" rows="4" required></textarea>
-
+        
+            <label for="image">Upload Image:</label>
+            <input type="file" id="image" name="image" accept="image/*">
+        
             <button type="submit">Create Petition</button>
         </form>
+        
+
+        
         
         <% if (petitionsList.length > 0) { %>
             <ul class="petition-list">
                 <% petitionsList.forEach(petition => { %>
                     <li class="petition-item">
+                        
+                        <!-- Image above the question -->
+                        <% if (petition.image && petition.image.trim().length > 0) { %>
+                            <div class="petition-image">
+                                <img src="data:image/jpeg;base64,<%= petition.image %>" alt="Petition Image"
+                                     style="max-width: 100%; height: auto; border: 1px solid black;">
+                            </div>
+                        <% } else { %>
+                            <p>No image available</p>
+                        <% } %>
+                        
+            
+                        <!-- Question and Description -->
                         <a href="/petition/<%= petition._id %>" class="petition-link">
                             <h3><%= petition.question %></h3>
                         </a>
@@ -40,6 +59,7 @@
                     </li>
                 <% }); %>
             </ul>
+            
         <% } else { %>
             <p>No petitions available.</p>
         <% } %>
