@@ -66,7 +66,7 @@ app.post("/login", async (req, res) => {
         if (isMatch) {
             // Store the user session
             req.session.userId = user._id;
-            res.redirect("http://localhost:5002/index");  // Explicitly redirect to localhost:5002
+            res.redirect("https://webproject-jdv7.onrender.com/index");  // Explicitly redirect to localhost:5002
         } else {
             res.send("Invalid password.");
         }
