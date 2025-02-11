@@ -58,23 +58,29 @@ app.post("/login", async (req, res) => {
         const user = await User.findOne({ username });
 
         if (!user) {
+            console.log("❌ User not found:", username);
             return res.send("User not found.");
         }
+
+        console.log("🔍 Checking password for user:", username);
+        console.log("Stored hash:", user.password);
 
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (isMatch) {
-            // Store the user session
+            console.log("✅ Password match. Logging in user:", username);
             req.session.userId = user._id;
-            res.redirect("/index");  // Explicitly redirect to localhost:5002
+            return res.redirect("/index");
         } else {
-            res.send("Invalid password.");
+            console.log("❌ Password incorrect for user:", username);
+            return res.send("Invalid password.");
         }
     } catch (error) {
-        console.error("Login error:", error);
+        console.error("❌ Login error:", error);
         res.status(500).send("Error logging in");
     }
 });
+
 
 // Handle User Signup (POST request)
 app.post("/signup", async (req, res) => {
