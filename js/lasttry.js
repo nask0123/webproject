@@ -10,12 +10,17 @@ const app = express();
 // Middleware to parse form data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({
+    origin: "https://webproject-jdv7.onrender.com", // ✅ Adjust for your frontend domain
+    credentials: true // ✅ Allow session cookies
+}));
+
 
 app.use(session({
-    secret: "your-secret-key",  // Replace with a secure secret key
+    secret: "664ebf1f9c5ff3b89bcab52e2d16729f9a023e829fe1037de7ce0e2c6d6397be",  // Replace with a secure secret key
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
+    cookie: { secure: process.env.NODE_ENV === "production", maxAge: 1000 * 60 * 60 }
 }));
 
 // Serve static files from "public" folder
@@ -58,23 +63,31 @@ app.post("/login", async (req, res) => {
         const user = await User.findOne({ username });
 
         if (!user) {
-            return res.send("User not found.");
+            return res.status(400).send("User not found.");
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
 
-        if (isMatch) {
-            // Store the user session
-            req.session.userId = user._id;
-            res.redirect("https://webproject-jdv7.onrender.com/index");  // Explicitly redirect to localhost:5002
-        } else {
-            res.send("Invalid password.");
+        if (!isMatch) {
+            return res.status(400).send("Invalid password.");
         }
+
+        // ✅ Store session and ensure it's saved
+        req.session.userId = user._id;
+
+        req.session.save((err) => {
+            if (err) {
+                console.error("Session save error:", err);
+                return res.status(500).send("Session error");
+            }
+            res.redirect("https://webproject-jdv7.onrender.com/index");
+        });
     } catch (error) {
         console.error("Login error:", error);
         res.status(500).send("Error logging in");
     }
 });
+
 
 // Handle User Signup (POST request)
 app.post("/signup", async (req, res) => {
