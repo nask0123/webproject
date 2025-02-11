@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
     // origin: "https://webproject-jdv7.onrender.com", // ✅ Adjust for your frontend domain
-    credentials: true // ✅ Allow session cookies
+    // credentials: true // ✅ Allow session cookies
 }));
 
 
