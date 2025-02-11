@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model("users", userSchema);
 
 // Render Login Page
-app.get("/login", (req, res) => {
+app.get("/", (req, res) => {
     res.render("login");
 });
 
