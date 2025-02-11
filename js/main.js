@@ -168,5 +168,5 @@ app.post('/vote', async (req, res) => {
 });
 
 // ✅ Start the server
-const PORT = 5002;
+const PORT = 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
