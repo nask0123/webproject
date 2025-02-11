@@ -11,7 +11,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
-    origin: "https://webproject-jdv7.onrender.com", // ✅ Adjust for your frontend domain
+    // origin: "https://webproject-jdv7.onrender.com", // ✅ Adjust for your frontend domain
     credentials: true // ✅ Allow session cookies
 }));
 
@@ -72,7 +72,7 @@ app.post("/login", async (req, res) => {
         if (isMatch) {
             // Store the user session
             req.session.userId = user._id;
-            res.redirect("https://webproject-jdv7.onrender.com/index");  // Explicitly redirect to localhost:5002
+            res.redirect("index");  // Explicitly redirect to localhost:5002
         } else {
             res.send("Invalid password.");
         }
