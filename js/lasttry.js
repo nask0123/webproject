@@ -13,12 +13,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 app.use(session({
-    secret: 'secret-key',  // Change this in production!
+    secret: "your-secret-key",  // Replace with a secure secret key
     resave: false,
-    saveUninitialized: false, // ✅ Set to false to avoid empty sessions
-    cookie: { secure: false, maxAge: 1000 * 60 * 60 } // 1-hour session
+    saveUninitialized: true,
 }));
-
 
 // Serve static files from "public" folder
 app.use(express.static("public"));
@@ -44,7 +42,7 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model("users", userSchema);
 
 // Render Login Page
-app.get("/", (req, res) => {
+app.get("/login", (req, res) => {
     res.render("login");
 });
 
@@ -54,24 +52,29 @@ app.get("/signup", (req, res) => {
 });
 
 // Register User
-app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
+app.post("/login", async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const user = await User.findOne({ username });
 
-    if (!user) {
-        return res.status(400).send('User not found');
+        if (!user) {
+            return res.send("User not found.");
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (isMatch) {
+            // Store the user session
+            req.session.userId = user._id;
+            res.redirect("https://webproject-jdv7.onrender.com/index");  // Explicitly redirect to localhost:5002
+        } else {
+            res.send("Invalid password.");
+        }
+    } catch (error) {
+        console.error("Login error:", error);
+        res.status(500).send("Error logging in");
     }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-        return res.status(400).send('Incorrect password');
-    }
-
-    req.session.userId = user._id; // ✅ Save user ID in session
-    res.redirect('/index'); // ✅ Redirect to index after login
 });
-
-
 
 // Handle User Signup (POST request)
 app.post("/signup", async (req, res) => {
@@ -103,24 +106,13 @@ app.post("/signup", async (req, res) => {
 });
 
 // Index Route (protected)
-app.get('/index', (req, res) => {
-    console.log("🔍 Session Data:", req.session);
+app.get("/index", (req, res) => {
     if (!req.session.userId) {
-        return res.redirect('/login');
+        return res.redirect("/");  // If not logged in, redirect to login page
     }
 
-    Petition.find().then(petitions => {
-        res.render('index', { 
-            petitionsList: petitions,
-            userVotes: req.session.userVotes || {} 
-        });
-    }).catch(err => {
-        console.error('❌ Error fetching petitions:', err);
-        res.status(500).send('Internal Server Error');
-    });
+    res.render("index");  // Your index page
 });
-
-
 
 // Start the server
 const PORT = 5000;
