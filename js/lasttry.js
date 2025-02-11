@@ -112,13 +112,22 @@ app.post("/signup", async (req, res) => {
 });
 
 // Index Route (protected)
-app.get("/index", (req, res) => {
+app.get("/index", async (req, res) => {
     if (!req.session.userId) {
-        return res.redirect("/");  // If not logged in, redirect to login page
+        return res.redirect("/");  // Redirect if not logged in
     }
 
-    res.render("index");  // Your index page
+    try {
+        // Fetch petitions from the database (modify the schema if needed)
+        const petitionsList = await Petition.find();  // Assuming you have a Petition model
+
+        res.render("index", { petitionsList });  // Pass petitionsList to the template
+    } catch (error) {
+        console.error("Error fetching petitions:", error);
+        res.status(500).send("Error loading petitions");
+    }
 });
+
 
 // Start the server
 const PORT = 5000;
