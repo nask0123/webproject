@@ -23,6 +23,7 @@ app.use(session({
     cookie: { secure: process.env.NODE_ENV === "production", maxAge: 1000 * 60 * 60 }
 }));
 
+
 // Serve static files from "public" folder
 app.use(express.static("public"));
 
@@ -63,31 +64,23 @@ app.post("/login", async (req, res) => {
         const user = await User.findOne({ username });
 
         if (!user) {
-            return res.status(400).send("User not found.");
+            return res.send("User not found.");
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
 
-        if (!isMatch) {
-            return res.status(400).send("Invalid password.");
+        if (isMatch) {
+            // Store the user session
+            req.session.userId = user._id;
+            res.redirect("https://webproject-jdv7.onrender.com/index");  // Explicitly redirect to localhost:5002
+        } else {
+            res.send("Invalid password.");
         }
-
-        // ✅ Store session and ensure it's saved
-        req.session.userId = user._id;
-
-        req.session.save((err) => {
-            if (err) {
-                console.error("Session save error:", err);
-                return res.status(500).send("Session error");
-            }
-            res.redirect("https://webproject-jdv7.onrender.com/index");
-        });
     } catch (error) {
         console.error("Login error:", error);
         res.status(500).send("Error logging in");
     }
 });
-
 
 // Handle User Signup (POST request)
 app.post("/signup", async (req, res) => {
