@@ -6,63 +6,82 @@
     <title>Petitions List</title>
     <link rel="stylesheet" href="/forindex.css">
 </head>
-<style>
-    .container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 0 20px;
-    }
-</style>
-<body style="background-color: rgb(196, 209, 255);">
+<body style="background-color: rgb(196, 209, 255); margin: 0;">
+
+    <!-- ✅ Исправленный Navbar -->
+    <nav class="navbar">
+        <a href="/index" class="logo">Petition App</a>
+        <input type="text" id="searchInput" placeholder="Search petitions...">
+        <a href="/user" class="profile-link">My Profile</a>
+    </nav>
+
     <div class="container">
         <h1>Petitions List</h1>
-        
-        <!-- Форма для создания новой петиции -->
+
+        <!-- ✅ Форма для создания новой петиции -->
         <form action="/create-petition" method="POST" enctype="multipart/form-data">
             <label for="question">Petition Question:</label>
             <textarea id="question" name="question" rows="2" required></textarea>
-        
+
             <label for="description">Description:</label>
             <textarea id="description" name="description" rows="4" required></textarea>
-        
+
             <label for="image">Upload Image:</label>
             <input type="file" id="image" name="image" accept="image/*">
-        
+
             <button type="submit">Create Petition</button>
         </form>
-        
 
-        
-        
+        <!-- ✅ Список петиций -->
         <% if (petitionsList.length > 0) { %>
-            <ul class="petition-list">
+            <ul id="petitionList" class="petition-list">
                 <% petitionsList.forEach(petition => { %>
                     <li class="petition-item">
-                        
-                        <!-- Image above the question -->
+                        <!-- ✅ Картинка (если есть) -->
                         <% if (petition.image && petition.image.trim().length > 0) { %>
                             <div class="petition-image">
                                 <img src="data:image/jpeg;base64,<%= petition.image %>" alt="Petition Image"
                                      style="max-width: 100%; height: auto; border: 1px solid black;">
                             </div>
-                        <% } else { %>
-                            <p>No image available</p>
                         <% } %>
-                        
-            
-                        <!-- Question and Description -->
+
+                        <!-- ✅ Заголовок и ссылка на петицию -->
                         <a href="/petition/<%= petition._id %>" class="petition-link">
-                            <h3><%= petition.question %></h3>
+                            <h3 class="petition-title"><%= petition.question %></h3>
                         </a>
+
+                        <!-- ✅ Описание (первые 100 символов) -->
                         <p class="description"><%= petition.description.substring(0, 100) %>...</p>
+
+                        <!-- ✅ Количество голосов -->
                         <p><strong>Votes:</strong> Yes: <%= petition.answers.yes %>, No: <%= petition.answers.no %></p>
                     </li>
                 <% }); %>
             </ul>
-            
         <% } else { %>
             <p>No petitions available.</p>
         <% } %>
     </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("searchInput");
+    const petitionList = document.getElementById("petitionList");
+
+    searchInput.addEventListener("keyup", function () {
+        let filter = searchInput.value.toLowerCase();
+        let petitions = petitionList.getElementsByClassName("petition-item");
+
+        Array.from(petitions).forEach(function (petition) {
+            let title = petition.querySelector(".petition-title").innerText.toLowerCase();
+            if (title.includes(filter)) {
+                petition.style.display = "block";
+            } else {
+                petition.style.display = "none";
+            }
+        });
+    });
+});
+
+</script>
 </body>
 </html>

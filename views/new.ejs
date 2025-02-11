@@ -2,21 +2,35 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Создать петицию</title>
     <link rel="stylesheet" href="/forindex.css">
+
 </head>
-<body>
+<body style="background-color: rgb(196, 209, 255);">
     <h1>Создать новую петицию</h1>
-    <form action="/create-petition" method="POST">
+    
+    <form action="/create-petition" method="POST" enctype="multipart/form-data">
         <label>Название:</label><br>
-        <input type="text" name="title" required><br><br>
-        
+        <input type="text" name="question" required><br><br>
+
         <label>Описание:</label><br>
         <textarea name="description" required></textarea><br><br>
 
+        <label>Фото:</label><br>
+        <input type="file" id="imageInput" name="image" accept="image/*" required><br><br>
+
+        <!-- Превью изображения перед загрузкой -->
+        <div id="previewContainer" style="display: none;">
+            <p>Предпросмотр изображения:</p>
+            <img id="imagePreview" src="#" alt="Предпросмотр" style="max-width: 100%; height: auto; border: 1px solid black;">
+        </div>
+        <br>
+
         <button type="submit">Создать</button>
     </form>
+    
     <br>
-    <a href="index">Назад</a>
+    <a href="/index">Назад</a>
 </body>
 </html>

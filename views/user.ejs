@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="/forindex.css">
+</head>
+<body style="background-color: rgb(230, 240, 255);">
+
+    <!-- ✅ Navbar -->
+    <nav class="navbar">
+        <a href="/index" class="logo">Petition App</a>
+        <a href="/user" class="profile-link">My Profile</a>
+    </nav>
+
+    <div class="container">
+        <h1>Welcome, <%= user.name %>!</h1>
+        <p><strong>Username:</strong> <%= user.name %></p>
+        <p><strong>Password:</strong> <%= user.password %></p>
+    </div>
+
+</body>
+</html>

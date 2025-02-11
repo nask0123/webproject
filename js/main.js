@@ -52,17 +52,6 @@ const petitionSchema = new mongoose.Schema({
 
 const Petition = mongoose.model('Petition', petitionSchema);
 
-// // ✅ Setup Multer for image uploads (stores images in /public/uploads)
-// const storage = multer.diskStorage({
-//     destination: "./public/uploads/",
-//     filename: (req, file, cb) => {
-//         cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
-//     }
-// });
-
-// const upload = multer({ storage });
-
-// ✅ Route: Home Page - Show all petitions
 app.get('/index', async (req, res) => {
     try {
         const petitions = await Petition.find();
@@ -80,6 +69,28 @@ app.get('/index', async (req, res) => {
 app.get('/new', (req, res) => {
     res.render('new');
 });
+app.get('/user', (req, res) => {
+
+    const user = {
+        username: String,
+        password: password // В реальном проекте **НЕ ПОКАЗЫВАЙ ПАРОЛЬ**
+    };
+
+    res.render('user', { user });
+});
+function searchPetitions() {
+    let input = document.getElementById("searchInput").value.toLowerCase();
+    let petitions = document.querySelectorAll(".petition-item");
+
+    petitions.forEach(petition => {
+        let title = petition.querySelector(".petition-title").innerText.toLowerCase();
+        if (title.includes(input)) {
+            petition.style.display = "block";
+        } else {
+            petition.style.display = "none";
+        }
+    });
+}
 
 // ✅ Route: Create new petition
 app.post('/create-petition', upload.single('image'), async (req, res) => {
