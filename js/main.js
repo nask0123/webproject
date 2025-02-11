@@ -31,12 +31,13 @@ app.use(session({
 }));
 
 // Connect to MongoDB
-mongoose.connect("mongodb://localhost:27017/petition", {
+mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
-.then(() => console.log('✅ Connected to MongoDB'))
+.then(() => console.log('✅ Connected to MongoDB Atlas'))
 .catch(err => console.error('❌ MongoDB Connection Error:', err));
+
 
 // Petition Schema
 const petitionSchema = new mongoose.Schema({

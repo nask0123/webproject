@@ -25,12 +25,13 @@ app.use(express.static("public"));
 app.set("view engine", "ejs");
 
 // MongoDB Connection
-mongoose.connect("mongodb://localhost:27017/login-tut", {
+mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
-    .then(() => console.log("Database connected successfully"))
-    .catch(err => console.error("Database connection failed", err));
+.then(() => console.log('✅ Connected to MongoDB Atlas'))
+.catch(err => console.error('❌ MongoDB Connection Error:', err));
+
 
 // Mongoose Schema
 const userSchema = new mongoose.Schema({
