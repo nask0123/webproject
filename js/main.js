@@ -70,15 +70,7 @@ app.get('/index', async (req, res) => {
 app.get('/new', (req, res) => {
     res.render('new');
 });
-app.get('/user', (req, res) => {
 
-    const user = {
-        username: String,
-        password: password // В реальном проекте **НЕ ПОКАЗЫВАЙ ПАРОЛЬ**
-    };
-
-    res.render('user', { user });
-});
 function searchPetitions() {
     let input = document.getElementById("searchInput").value.toLowerCase();
     let petitions = document.querySelectorAll(".petition-item");

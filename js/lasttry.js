@@ -13,10 +13,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 app.use(session({
-    secret: "your-secret-key",  // Replace with a secure secret key
+    secret: 'secret-key',  // Change this in production!
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false, // ✅ Set to false to avoid empty sessions
+    cookie: { secure: false, maxAge: 1000 * 60 * 60 } // 1-hour session
 }));
+
 
 // Serve static files from "public" folder
 app.use(express.static("public"));
@@ -52,34 +54,23 @@ app.get("/signup", (req, res) => {
 });
 
 // Register User
-app.post("/login", async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        const user = await User.findOne({ username });
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+    const user = await User.findOne({ username });
 
-        if (!user) {
-            console.log("❌ User not found:", username);
-            return res.send("User not found.");
-        }
-
-        console.log("🔍 Checking password for user:", username);
-        console.log("Stored hash:", user.password);
-
-        const isMatch = await bcrypt.compare(password, user.password);
-
-        if (isMatch) {
-            console.log("✅ Password match. Logging in user:", username);
-            req.session.userId = user._id;
-            return res.redirect("/index");
-        } else {
-            console.log("❌ Password incorrect for user:", username);
-            return res.send("Invalid password.");
-        }
-    } catch (error) {
-        console.error("❌ Login error:", error);
-        res.status(500).send("Error logging in");
+    if (!user) {
+        return res.status(400).send('User not found');
     }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+        return res.status(400).send('Incorrect password');
+    }
+
+    req.session.userId = user._id; // ✅ Save user ID in session
+    res.redirect('/index'); // ✅ Redirect to index after login
 });
+
 
 
 // Handle User Signup (POST request)
@@ -112,21 +103,23 @@ app.post("/signup", async (req, res) => {
 });
 
 // Index Route (protected)
-app.get("/index", async (req, res) => {
+app.get('/index', (req, res) => {
+    console.log("🔍 Session Data:", req.session);
     if (!req.session.userId) {
-        return res.redirect("/");  // Redirect if not logged in
+        return res.redirect('/login');
     }
 
-    try {
-        // Fetch petitions from the database (modify the schema if needed)
-        const petitionsList = await Petition.find();  // Assuming you have a Petition model
-
-        res.render("index", { petitionsList });  // Pass petitionsList to the template
-    } catch (error) {
-        console.error("Error fetching petitions:", error);
-        res.status(500).send("Error loading petitions");
-    }
+    Petition.find().then(petitions => {
+        res.render('index', { 
+            petitionsList: petitions,
+            userVotes: req.session.userVotes || {} 
+        });
+    }).catch(err => {
+        console.error('❌ Error fetching petitions:', err);
+        res.status(500).send('Internal Server Error');
+    });
 });
+
 
 
 // Start the server
