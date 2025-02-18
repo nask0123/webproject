@@ -15,10 +15,25 @@
     </nav>
 
     <div class="container">
-        <h1>Welcome, <%= user.name %>!</h1>
-        <p><strong>Username:</strong> <%= user.name %></p>
-        <p><strong>Password:</strong> <%= user.password %></p>
-    </div>
+        <h1>Welcome, <%= user.username %>!</h1>
+        <p><strong>Username:</strong> <%= user.username %></p>
+        <p><strong>Password:</strong> It is a secret, even the creator doesn't know 😂😂</p>
 
+        <!-- ✅ Show Profile Picture -->
+        <% if (user.profileImage) { %>
+            <div class="profile-image">
+                <img src="data:image/jpeg;base64,<%= user.profileImage %>" alt="Profile Picture"
+                     style="max-width: 150px; height: 150px; border-radius: 50%;">
+            </div>
+        <% } else { %>
+            <p>No profile picture uploaded.</p>
+        <% } %>
+
+        <!-- ✅ Upload Profile Picture -->
+        <form action="/upload-profile" method="POST" enctype="multipart/form-data">
+            <input type="file" name="image" accept="image/*" required>
+            <button type="submit">Upload Profile Picture</button>
+        </form>
+    </div>
 </body>
 </html>

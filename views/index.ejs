@@ -9,9 +9,23 @@
 <body style="background-color: rgb(196, 209, 255); margin: 0;">
 
     <!-- ✅ Исправленный Navbar -->
-    <nav class="navbar" style="margin-top:-1%; margin-left: -1%; margin-right: -1%;">
+    <nav class="navbar" style="margin-top:-1%; margin-left: -1%; margin-right: -3%;">
         <a href="/index" class="logo">Petition App</a>
         <input type="text" id="searchInput" placeholder="Search petitions...">
+        <div class="profile-image">
+            <% if (user && user.profileImage) { %>
+                <a href="/user">
+                    <img src="data:image/jpeg;base64,<%= user.profileImage %>" alt="Profile Picture"
+                         style="max-width: 150px; height: 150px; border-radius: 50%;">
+                </a>
+            <% } else { %>
+                <a href="/user">
+                    <img src="/default-profile.png" alt="Default Profile Picture"
+                         style="max-width: 150px; height: 150px; border-radius: 50%;">
+                </a>
+            <% } %>
+        </div>
+        
     </nav>
 
     <div class="container">

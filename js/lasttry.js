@@ -40,8 +40,10 @@ mongoose.connect(process.env.MONGO_URI, {
 // ✅ Mongoose User Schema
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    profileImage: { type: String } // Stores the image as a Base64 string
 });
+
 const User = mongoose.model("users", userSchema);
 
 // ✅ Mongoose Petition Schema
@@ -111,23 +113,25 @@ app.post("/login", async (req, res) => {
 
 // ✅ Protected Index Route
 app.get("/index", async (req, res) => {
-    console.log("🔍 Checking session:", req.session.userId);
-
     if (!req.session.userId) {
-        return res.redirect("/");
+        return res.redirect("/login"); // Redirect to login if not authenticated
     }
 
     try {
-        const petitions = await Petition.find();
+        const user = await User.findById(req.session.userId);
+        const petitionsList = await Petition.find({}); // Fetch all petitions
+
         res.render("index", { 
-            petitionsList: petitions,
-            userVotes: req.session.userVotes || {} 
+            user: user, 
+            petitionsList: petitionsList 
         });
-    } catch (err) {
-        console.error("❌ Error fetching petitions:", err);
+
+    } catch (error) {
+        console.error("❌ Error fetching data for index page:", error);
         res.status(500).send("Internal Server Error");
     }
 });
+
 
 // ✅ Show Petition Creation Form
 app.get("/new", (req, res) => {
@@ -216,14 +220,64 @@ app.post("/vote", async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
+app.get("/user", async (req, res) => {
+    if (!req.session.userId) {
+        return res.redirect("/"); // Redirect to login if not authenticated
+    }
+
+    try {
+        const user = await User.findById(req.session.userId).select("-password");
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+
+        res.render("user", { user });
+    } catch (error) {
+        console.error("❌ Error fetching user data:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+app.post("/upload-profile", upload.single("image"), async (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).send("Unauthorized");
+    }
+
+    try {
+        const user = await User.findById(req.session.userId);
+
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+
+        if (req.file && req.file.buffer) {
+            user.profileImage = req.file.buffer.toString("base64"); // Convert image to Base64
+        }
+
+        await user.save();
+        res.redirect("/user");
+    } catch (error) {
+        console.error("❌ Error uploading profile picture:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
 
 // ✅ Logout Route
 app.get("/logout", (req, res) => {
-    req.session.destroy(() => {
-        res.redirect("/logout");
+    req.session.destroy((err) => {
+        if (err) {
+            console.error("❌ Logout Error:", err);
+            return res.status(500).send("Error logging out");
+        }
+        res.redirect("/"); // Redirect to login page
     });
 });
+
+
 
 // ✅ Start Server
 const PORT = process.env.PORT || 5002;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+// process.env.MONGO_URI
