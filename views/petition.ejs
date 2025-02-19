@@ -9,30 +9,43 @@
 <body>
     <div class="container">
         <h1>Petition Details</h1>
-        
-        <!-- Вопрос петиции -->
         <h2><%= petition.question %></h2>
-        
-        <!-- Описание петиции -->
         <p class="description"><%= petition.description %></p>
-
-        <!-- Отображение голосов -->
         <p><strong>Votes:</strong> Yes: <%= petition.answers.yes %>, No: <%= petition.answers.no %></p>
-        
-        <!-- Проверка: голосовал ли пользователь -->
         <% if (userVoted) { %>
-            <p><strong>You have already voted on this petition.</strong></p>
+            <p class="alert">You have already voted on this petition.</p>
         <% } else { %>
-            <!-- Форма для голосования -->
-            <form action="/vote" method="POST">
+            <form action="/vote" method="POST" class="vote-form">
                 <input type="hidden" name="petitionId" value="<%= petition._id %>">
-                <button type="submit" name="answer" value="yes">Vote Yes</button>
-                <button type="submit" name="answer" value="no">Vote No</button>
+                <button type="submit" name="answer" value="yes" class="btn">Vote Yes</button>
+                <button type="submit" name="answer" value="no" class="btn">Vote No</button>
             </form>
         <% } %>
+        <h2>Comments</h2>
+        <% if (comments && comments.length > 0) { %>
+            <ul class="comment-list">
+                <% comments.forEach(comment => { %>
+                    <li class="comment">
+                        <strong><%= comment.userId.username %>:</strong>
+                        <p><%= comment.text %></p>
+                        <small class="timestamp"><%= new Date(comment.createdAt).toLocaleString() %></small>
+                    </li>
+                <% }); %>
+            </ul>
+        <% } else { %>
+            <p class="no-comments">No comments yet. Be the first to comment!</p>
+        <% } %>
+
+        <!-- Add a Comment -->
+        <h3>Add a Comment</h3>
+        <form action="/add-comment" method="POST" class="comment-form">
+            <input type="hidden" name="petitionId" value="<%= petition._id %>">
+            <textarea name="text" rows="3" required class="comment-textarea"></textarea>
+            <button type="submit" class="btn">Post Comment</button>
+        </form>
 
         <br>
-        <a href="/index">⬅ Back to Petition List</a>
+        <a href="/index" class="back-link">⬅ Back to Petition List</a>
     </div>
 </body>
 </html>

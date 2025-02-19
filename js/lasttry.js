@@ -59,6 +59,14 @@ const petitionSchema = new mongoose.Schema({
 });
 const Petition = mongoose.model("Petition", petitionSchema);
 
+const commentSchema = new mongoose.Schema({
+    petitionId: { type: mongoose.Schema.Types.ObjectId, ref: "Petition", required: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "users", required: true },
+    text: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+});
+const Comment = mongoose.model("Comment", commentSchema);
+
 // ✅ Render Login Page
 app.get("/", (req, res) => {
     res.render("login");
@@ -177,8 +185,13 @@ app.get("/petition/:id", async (req, res) => {
             return res.status(404).send("Petition not found");
         }
 
+        // Загружаем комментарии по petitionId
+        const comments = await Comment.find({ petitionId: petition._id }).populate("userId", "username").sort({ createdAt: -1 });
+
+
         res.render("petition", { 
             petition,
+            comments, // Передаем комментарии в шаблон
             userVoted: req.session.userVotes?.[petition._id] || false
         });
     } catch (err) {
@@ -258,6 +271,58 @@ app.post("/upload-profile", upload.single("image"), async (req, res) => {
         res.redirect("/user");
     } catch (error) {
         console.error("❌ Error uploading profile picture:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+app.get("/", (req, res) => {
+    res.render("login");
+});
+app.post("/add-comment", async (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).send("Unauthorized");
+    }
+
+    try {
+        const { petitionId, text } = req.body;
+        const user = await User.findById(req.session.userId);
+
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+
+        const newComment = new Comment({
+            petitionId,
+            userId: user._id, // ✅ Передаем userId, а не username
+            text
+        });
+
+        await newComment.save();
+        res.redirect(`/petition/${petitionId}`);
+
+    } catch (err) {
+        console.error("❌ Error adding comment:", err);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+
+// ✅ Create Comment
+app.post("/comment", async (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).send("Unauthorized");
+    }
+    
+    try {
+        const { petitionId, text } = req.body;
+        const newComment = new Comment({
+            petitionId,
+            userId: req.session.userId, // ✅ Гарантируем передачу userId
+            text
+        });
+        await newComment.save();
+        res.redirect(`/petition/${petitionId}`);
+    } catch (error) {
+        console.error("❌ Error adding comment:", error);
         res.status(500).send("Internal Server Error");
     }
 });
