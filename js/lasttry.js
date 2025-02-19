@@ -7,6 +7,9 @@ const cors = require("cors");
 const session = require("express-session");
 const multer = require("multer");
 const path = require("path");
+const methodOverride = require("method-override");
+
+
 
 const app = express();
 
@@ -18,6 +21,7 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.static("public"));
+app.use(methodOverride("_method"));
 
 app.set("view engine", "ejs");
 
@@ -55,8 +59,10 @@ const petitionSchema = new mongoose.Schema({
         no: { type: Number, default: 0 }
     },
     votedUsers: [{ type: String }],
-    image: String
+    image: String,
+    creator: { type: mongoose.Schema.Types.ObjectId, ref: "users", required: true } // ✅ Track creator
 });
+
 const Petition = mongoose.model("Petition", petitionSchema);
 
 const commentSchema = new mongoose.Schema({
@@ -152,19 +158,20 @@ const upload = multer({ storage: storage });
 
 // ✅ Create New Petition
 app.post("/create-petition", upload.single("image"), async (req, res) => {
-    const { question, description } = req.body;
-    let imageBase64 = "";
-
-    if (req.file && req.file.buffer) {
-        imageBase64 = req.file.buffer.toString("base64");
+    if (!req.session.userId) {
+        return res.status(401).send("Unauthorized");
     }
+
+    const { question, description } = req.body;
+    let imageBase64 = req.file ? req.file.buffer.toString("base64") : "";
 
     const newPetition = new Petition({
         question,
         description,
         answers: { yes: 0, no: 0 },
         votedUsers: [],
-        image: imageBase64
+        image: imageBase64,
+        creator: req.session.userId // ✅ Store the creator's user ID
     });
 
     try {
@@ -175,6 +182,7 @@ app.post("/create-petition", upload.single("image"), async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
+
 
 // ✅ View Single Petition
 app.get("/petition/:id", async (req, res) => {
@@ -199,6 +207,75 @@ app.get("/petition/:id", async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
+app.put("/petition/:id", async (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).send("Unauthorized");
+    }
+
+    try {
+        const petition = await Petition.findById(req.params.id);
+        if (!petition) return res.status(404).send("Petition not found");
+
+        // ✅ Check if the logged-in user is the petition creator
+        if (petition.creator.toString() !== req.session.userId) {
+            return res.status(403).send("You can only edit your own petition.");
+        }
+
+        // ✅ Update petition fields
+        petition.question = req.body.question || petition.question;
+        petition.description = req.body.description || petition.description;
+        await petition.save();
+
+        res.redirect(`/petition/${petition._id}`); // Redirect to the petition page
+    } catch (error) {
+        console.error("❌ Error updating petition:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+app.get("/edit-petition/:id", async (req, res) => {
+    if (!req.session.userId) {
+        return res.redirect("/"); // Redirect to login if not authenticated
+    }
+
+    try {
+        const petition = await Petition.findById(req.params.id);
+        if (!petition) return res.status(404).send("Petition not found");
+
+        // ✅ Ensure only creator can access edit page
+        if (petition.creator.toString() !== req.session.userId) {
+            return res.status(403).send("You can only edit your own petition.");
+        }
+
+        res.render("edit-petition", { petition }); // Render EJS form
+    } catch (error) {
+        console.error("❌ Error loading edit page:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+
+app.delete("/petition/:id", async (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).send("Unauthorized");
+    }
+
+    try {
+        const petition = await Petition.findById(req.params.id);
+        if (!petition) return res.status(404).send("Petition not found");
+
+        // ✅ Ensure only the creator can delete
+        if (petition.creator.toString() !== req.session.userId) {
+            return res.status(403).send("You can only delete your own petition.");
+        }
+
+        await Petition.findByIdAndDelete(req.params.id);
+        res.redirect("/index"); // Redirect to homepage after deletion
+    } catch (error) {
+        console.error("❌ Error deleting petition:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
 
 // ✅ Vote on Petition
 app.post("/vote", async (req, res) => {
@@ -346,3 +423,4 @@ const PORT = process.env.PORT || 5002;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
 // process.env.MONGO_URI
+//mongodb://localhost:27017/

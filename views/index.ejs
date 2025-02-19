@@ -57,6 +57,14 @@
                                      style="max-width: 100%; height: auto; border: 1px solid black;">
                             </div>
                         <% } %>
+                        <% if (user && user._id.toString() === petition.creator.toString()) { %>
+                            <a href="/edit-petition/<%= petition._id %>">✏ Edit</a>
+                            
+                            <form action="/petition/<%= petition._id %>?_method=DELETE" method="POST" onsubmit="return confirm('Are you sure?')">
+                                <button type="submit">🗑 Delete</button>
+                            </form>
+                        <% } %>
+                        
 
                         <!-- ✅ Заголовок и ссылка на петицию -->
                         <a href="/petition/<%= petition._id %>" class="petition-link">

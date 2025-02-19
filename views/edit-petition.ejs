@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Edit Petition</title>
+</head>
+<body>
+    <h2>Edit Your Petition</h2>
+    
+    <form action="/petition/<%= petition._id %>?_method=PUT" method="POST">
+        <label for="question">Question:</label>
+        <input type="text" name="question" id="question" value="<%= petition.question %>" required>
+
+        <label for="description">Description:</label>
+        <textarea name="description" id="description" required><%= petition.description %></textarea>
+
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <a href="/petition/<%= petition._id %>">Back to Petition</a>
+</body>
+</html>
