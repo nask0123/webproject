@@ -2,20 +2,82 @@
 <html lang="en">
 <head>
     <title>Edit Petition</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            text-align: left;
+            margin-top: 10px;
+        }
+        input, textarea {
+            width: calc(100% - 20px);
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 100px;
+            resize: none;
+        }
+        button {
+            margin-top: 15px;
+            padding: 10px;
+            width: 100%;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .back-link {
+            display: block;
+            margin-top: 10px;
+            text-decoration: none;
+            color: #007BFF;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h2>Edit Your Petition</h2>
-    
-    <form action="/petition/<%= petition._id %>?_method=PUT" method="POST">
-        <label for="question">Question:</label>
-        <input type="text" name="question" id="question" value="<%= petition.question %>" required>
+    <div class="container">
+        <h2>Edit Your Petition</h2>
+        
+        <form action="/petition/<%= petition._id %>?_method=PUT" method="POST">
+            <label for="question">Question:</label>
+            <input type="text" name="question" id="question" value="<%= petition.question %>" required>
 
-        <label for="description">Description:</label>
-        <textarea name="description" id="description" required><%= petition.description %></textarea>
+            <label for="description">Description:</label>
+            <textarea name="description" id="description" required><%= petition.description %></textarea>
 
-        <button type="submit">Save Changes</button>
-    </form>
+            <button type="submit">Save Changes</button>
+        </form>
 
-    <a href="/petition/<%= petition._id %>">Back to Petition</a>
+        <a href="/petition/<%= petition._id %>" class="back-link">Back to Petition</a>
+    </div>
 </body>
 </html>
