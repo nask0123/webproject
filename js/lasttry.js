@@ -404,6 +404,10 @@ app.post("/comment", async (req, res) => {
     }
 });
 
+app.get("/nike_products", async (req, res) => {
+    const products = await fetchProducts();
+    res.render("nike_products", { products });
+});
 
 // ✅ Logout Route
 app.get("/logout", (req, res) => {
