@@ -403,15 +403,22 @@ app.post("/comment", async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
+const productSchema = new mongoose.Schema({
+    name: String,
+    brand: String,
+    price: String,
+    url: String
+});
 
-app.get("/nike-products", async (req, res) => {
+const Product = mongoose.model("Product", productSchema);
+
+// Serve the homepage with products from MongoDB
+app.get("/nike_products", async (req, res) => {
     try {
-        // Fetch products from the database (Example)
-        const products = await Product.find({ brand: "Nike" }); 
-
+        const products = await Product.find(); // Fetch all products from MongoDB
         res.render("nike_products", { products });
     } catch (error) {
-        console.error("❌ Error fetching products:", error);
+        console.error("Error fetching products:", error);
         res.status(500).send("Internal Server Error");
     }
 });
