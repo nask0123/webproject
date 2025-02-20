@@ -8,6 +8,7 @@ const session = require("express-session");
 const multer = require("multer");
 const path = require("path");
 const methodOverride = require("method-override");
+const { MongoClient } = require("mongodb");
 
 const MONGO_URI = "mongodb+srv://everyone:vxtphvFI4fswR32C@cluster0.vsy7m.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 const DB_NAME = "test";
