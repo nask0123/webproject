@@ -404,6 +404,20 @@ app.post("/comment", async (req, res) => {
     }
 });
 
+const DB_NAME = "test";
+const COLLECTION_NAME = "nikeProducts";
+
+app.set("view engine", "ejs");
+
+async function fetchProducts() {
+    const client = new MongoClient(MONGO_URI);
+    await client.connect();
+    const db = client.db(DB_NAME);
+    const products = await db.collection(COLLECTION_NAME).find().toArray();
+    await client.close();
+    return products;
+}
+
 app.get("/nike_products", async (req, res) => {
     const products = await fetchProducts();
     res.render("nike_products", { products });
