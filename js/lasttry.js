@@ -9,7 +9,7 @@ const multer = require("multer");
 const path = require("path");
 const methodOverride = require("method-override");
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://everyone:vxtphvFI4fswR32C@cluster0.vsy7m.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const MONGO_URI = "mongodb+srv://everyone:vxtphvFI4fswR32C@cluster0.vsy7m.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 const DB_NAME = "test";
 const COLLECTION_NAME = "nikeProducts";
 
@@ -36,7 +36,7 @@ app.use(session({
 }));
 
 // ✅ Connect to MongoDB
-mongoose.connect(MONGO_URI, {
+mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
