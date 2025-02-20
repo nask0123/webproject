@@ -22,5 +22,5 @@ app.get("/nike_products", async (req, res) => {
     res.render("nike_products", { products });
 });
 
-const PORT = process.env.PORT || 5002;
+const PORT = process.env.PORT || 5003;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

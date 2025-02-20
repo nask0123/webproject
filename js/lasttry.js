@@ -9,7 +9,9 @@ const multer = require("multer");
 const path = require("path");
 const methodOverride = require("method-override");
 
-
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://everyone:vxtphvFI4fswR32C@cluster0.vsy7m.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const DB_NAME = "test";
+const COLLECTION_NAME = "nikeProducts";
 
 const app = express();
 
@@ -34,7 +36,7 @@ app.use(session({
 }));
 
 // ✅ Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
+mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
@@ -403,27 +405,26 @@ app.post("/comment", async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
-const productSchema = new mongoose.Schema({
-    name: String,
-    brand: String,
-    price: String,
-    url: String
-});
 
-const Product = mongoose.model("Product", productSchema);
+async function fetchProducts() {
+    const client = new MongoClient(MONGO_URI);
+    await client.connect();
+    const db = client.db(DB_NAME);
+    const products = await db.collection(COLLECTION_NAME).find().toArray();
+    await client.close();
+    return products;
+}
 
-// Serve the homepage with products from MongoDB
+// ✅ Route to render Nike products
 app.get("/nike_products", async (req, res) => {
     try {
-        const products = await Product.find(); // Fetch all products from MongoDB
+        const products = await fetchProducts();
         res.render("nike_products", { products });
     } catch (error) {
-        console.error("Error fetching products:", error);
+        console.error("❌ Error fetching products:", error);
         res.status(500).send("Internal Server Error");
     }
 });
-
-
 // ✅ Logout Route
 app.get("/logout", (req, res) => {
     req.session.destroy((err) => {

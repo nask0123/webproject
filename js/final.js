@@ -2,9 +2,9 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 const { MongoClient } = require("mongodb");
 
-const MONGO_URI = "mongodb+srv://everyone:vxtphvFI4fswR32C@cluster0.vsy7m.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const MONGO_URI = "mongodb://localhost:27017/";
 
-const DB_NAME = "test";
+const DB_NAME = "petition";
 const COLLECTION_NAME = "nikeProducts";
 
 const BASE_URL = "https://www.nike.com/w/mens-shoes-nik1zy7ok";
