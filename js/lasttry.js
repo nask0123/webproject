@@ -404,24 +404,18 @@ app.post("/comment", async (req, res) => {
     }
 });
 
-const DB_NAME = "test";
-const COLLECTION_NAME = "nikeProducts";
+app.get("/nike-products", async (req, res) => {
+    try {
+        // Fetch products from the database (Example)
+        const products = await Product.find({ brand: "Nike" }); 
 
-app.set("view engine", "ejs");
-
-async function fetchProducts() {
-    const client = new MongoClient(MONGO_URI);
-    await client.connect();
-    const db = client.db(DB_NAME);
-    const products = await db.collection(COLLECTION_NAME).find().toArray();
-    await client.close();
-    return products;
-}
-
-app.get("/nike_products", async (req, res) => {
-    const products = await fetchProducts();
-    res.render("nike_products", { products });
+        res.render("nike_products", { products });
+    } catch (error) {
+        console.error("❌ Error fetching products:", error);
+        res.status(500).send("Internal Server Error");
+    }
 });
+
 
 // ✅ Logout Route
 app.get("/logout", (req, res) => {
