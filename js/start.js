@@ -1,5 +1,5 @@
 // server.js
 
 // Require both main.js and lasttry.js
-// require('./main.js');
+require('./nike.js');
 require('./lasttry.js');
