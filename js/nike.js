@@ -2,7 +2,6 @@ const express = require("express");
 const { MongoClient } = require("mongodb");
 
 const app = express();
-const PORT = 3000;
 const MONGO_URI = "mongodb+srv://everyone:vxtphvFI4fswR32C@cluster0.vsy7m.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 const DB_NAME = "test";
 const COLLECTION_NAME = "nikeProducts";
@@ -23,6 +22,5 @@ app.get("/", async (req, res) => {
     res.render("nike_products", { products });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-});
+const PORT = process.env.PORT || 5002;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
