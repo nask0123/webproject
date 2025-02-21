@@ -29,6 +29,12 @@
                         <strong><%= comment.userId.username %>:</strong>
                         <p><%= comment.text %></p>
                         <small class="timestamp"><%= new Date(comment.createdAt).toLocaleString() %></small>
+                        <% if (user && comment.userId._id.toString() === user._id.toString()) { %>
+                            <a href="/edit-comment/<%= comment._id %>">Edit</a>
+                            <form action="/comment/<%= comment._id %>?_method=DELETE" method="POST">
+                                <button type="submit">Delete</button>
+                            </form>
+                         <% } %>
                     </li>
                 <% }); %>
             </ul>

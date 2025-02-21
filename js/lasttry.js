@@ -188,6 +188,7 @@ app.post("/create-petition", upload.single("image"), async (req, res) => {
 
 
 // ✅ View Single Petition
+// ✅ View Single Petition
 app.get("/petition/:id", async (req, res) => {
     try {
         const petition = await Petition.findById(req.params.id);
@@ -196,13 +197,20 @@ app.get("/petition/:id", async (req, res) => {
             return res.status(404).send("Petition not found");
         }
 
-        // Загружаем комментарии по petitionId
+        // ✅ Fetch the logged-in user
+        let user = null;
+        if (req.session.userId) {
+            user = await User.findById(req.session.userId);
+        }
+
+        // ✅ Загружаем комментарии по petitionId
         const comments = await Comment.find({ petitionId: petition._id }).populate("userId", "username").sort({ createdAt: -1 });
 
 
-        res.render("petition", { 
+        res.render("petition", {
             petition,
             comments, // Передаем комментарии в шаблон
+            user: user,   // ✅ Pass the user object to the view
             userVoted: req.session.userVotes?.[petition._id] || false
         });
     } catch (err) {
@@ -210,6 +218,7 @@ app.get("/petition/:id", async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
+
 app.put("/petition/:id", async (req, res) => {
     if (!req.session.userId) {
         return res.status(401).send("Unauthorized");
@@ -406,6 +415,87 @@ app.post("/comment", async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 });
+// ✅ Edit Comment Route (Requires comment ID)
+app.get("/edit-comment/:id", async (req, res) => {
+    if (!req.session.userId) {
+        return res.redirect("/");
+    }
+
+    try {
+        const comment = await Comment.findById(req.params.id).populate("petitionId");
+
+        if (!comment) {
+            return res.status(404).send("Comment not found");
+        }
+
+        // ✅ Check if the logged-in user is the comment author
+        if (comment.userId.toString() !== req.session.userId) {
+            return res.status(403).send("You are not authorized to edit this comment.");
+        }
+
+        res.render("edit-comment", { comment }); // Render edit form (create edit-comment.ejs)
+    } catch (error) {
+        console.error("❌ Error loading edit comment page:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+// ✅ Update Comment Route
+app.put("/comment/:id", async (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).send("Unauthorized");
+    }
+
+    try {
+        const comment = await Comment.findById(req.params.id).populate("petitionId");
+        if (!comment) {
+            return res.status(404).send("Comment not found");
+        }
+
+        // ✅ Check if the logged-in user is the comment author
+        if (comment.userId.toString() !== req.session.userId) {
+            return res.status(403).send("You are not authorized to edit this comment.");
+        }
+
+        comment.text = req.body.text || comment.text;
+        await comment.save();
+
+        res.redirect(`/petition/${comment.petitionId._id}`);
+    } catch (error) {
+        console.error("❌ Error updating comment:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+// ✅ Delete Comment Route
+app.delete("/comment/:id", async (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).send("Unauthorized");
+    }
+
+    try {
+        const comment = await Comment.findById(req.params.id).populate("petitionId");
+
+        if (!comment) {
+            return res.status(404).send("Comment not found");
+        }
+
+        // ✅ Check if the logged-in user is the comment author
+        if (comment.userId.toString() !== req.session.userId) {
+            return res.status(403).send("You are not authorized to delete this comment.");
+        }
+
+        await Comment.findByIdAndDelete(req.params.id);
+        res.redirect(`/petition/${comment.petitionId._id}`);
+    } catch (error) {
+        console.error("❌ Error deleting comment:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+
+
+
 
 async function fetchProducts() {
     const client = new MongoClient(MONGO_URI);
