@@ -25,8 +25,6 @@ app.use(cors({
 }));
 app.use(express.static("public"));
 app.use(methodOverride("_method"));
-app.use("/admin", require("./routes/admin"));
-
 
 app.set("view engine", "ejs");
 
@@ -122,16 +120,14 @@ app.post("/login", async (req, res) => {
         }
 
         req.session.userId = user._id;
-        req.session.isAdmin = user.isAdmin; // ✅ Store admin status
+        console.log("✅ User logged in:", req.session.userId);
 
-        console.log("✅ User logged in:", req.session.userId, "Admin:", req.session.isAdmin);
         res.redirect("/index");
     } catch (error) {
         console.error("❌ Login error:", error);
         res.status(500).send("Error logging in");
     }
 });
-
 
 // ✅ Protected Index Route
 app.get("/index", async (req, res) => {
@@ -277,21 +273,32 @@ app.delete("/petition/:id", async (req, res) => {
     }
 
     try {
-        const petition = await Petition.findById(req.params.id);
-        if (!petition) return res.status(404).send("Petition not found");
-
-        // ✅ Ensure only the creator can delete
-        if (petition.creator.toString() !== req.session.userId) {
-            return res.status(403).send("You can only delete your own petition.");
+        const user = await User.findById(req.session.userId);
+        if (!user) {
+            return res.status(404).send("User not found");
         }
 
-        await Petition.findByIdAndDelete(req.params.id);
-        res.redirect("/index"); // Redirect to homepage after deletion
+        const petition = await Petition.findById(req.params.id);
+        if (!petition) {
+            return res.status(404).send("Petition not found");
+        }
+
+        if (user.isAdmin) {
+            await Petition.findByIdAndDelete(req.params.id);
+            res.redirect("/index"); // Redirect to homepage after deletion
+        } else if (petition.creator.toString() === req.session.userId) {
+            await Petition.findByIdAndDelete(req.params.id);
+            res.redirect("/index"); // Redirect to homepage after deletion
+        } else {
+            return res.status(403).send("You are not authorized to delete this petition.");
+        }
     } catch (error) {
         console.error("❌ Error deleting petition:", error);
         res.status(500).send("Internal Server Error");
     }
 });
+
+
 
 
 // ✅ Vote on Petition
@@ -479,21 +486,50 @@ app.delete("/comment/:id", async (req, res) => {
     }
 
     try {
+        const user = await User.findById(req.session.userId);
         const comment = await Comment.findById(req.params.id).populate("petitionId");
 
         if (!comment) {
             return res.status(404).send("Comment not found");
         }
 
-        // ✅ Check if the logged-in user is the comment author
-        if (comment.userId.toString() !== req.session.userId) {
+        // ✅ Allow admins to delete any comment, otherwise, only the creator can delete
+        if (user.isAdmin || comment.userId.toString() === req.session.userId) {
+            await Comment.findByIdAndDelete(req.params.id);
+            res.redirect(`/petition/${comment.petitionId._id}`);
+        } else {
             return res.status(403).send("You are not authorized to delete this comment.");
         }
-
-        await Comment.findByIdAndDelete(req.params.id);
-        res.redirect(`/petition/${comment.petitionId._id}`);
     } catch (error) {
         console.error("❌ Error deleting comment:", error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+const requireAdmin = (req, res, next) => {
+    if (req.session.userId) {
+        User.findById(req.session.userId)
+            .then(user => {
+                if (user && user.isAdmin) {
+                    next(); // User is an admin, proceed
+                } else {
+                    res.status(403).send("Unauthorized: Admin access required.");
+                }
+            })
+            .catch(err => {
+                console.error("Error checking admin status:", err);
+                res.status(500).send("Internal Server Error");
+            });
+    } else {
+        res.status(401).send("Unauthorized: Please log in.");
+    }
+};
+app.get("/admin/petitions", requireAdmin, async (req, res) => {
+    try {
+        const petitions = await Petition.find({});
+        res.render("admin-petitions", { petitions }); // Render a view with all petitions
+    } catch (error) {
+        console.error("Error fetching petitions for admin:", error);
         res.status(500).send("Internal Server Error");
     }
 });
@@ -530,23 +566,6 @@ app.get("/logout", (req, res) => {
         }
         res.redirect("/"); // Redirect to login page
     });
-});
-const requireAdmin = (req, res, next) => {
-    if (!req.session.userId || !req.session.isAdmin) {
-        return res.status(403).send("Access denied. Admins only.");
-    }
-    next();
-};
-
-// Example: Admin-Only Route to Delete Any Petition
-app.delete("/admin/delete-petition/:id", requireAdmin, async (req, res) => {
-    try {
-        await Petition.findByIdAndDelete(req.params.id);
-        res.redirect("/index");
-    } catch (error) {
-        console.error("❌ Error deleting petition:", error);
-        res.status(500).send("Internal Server Error");
-    }
 });
 
 

@@ -11,10 +11,6 @@
     <!-- ✅ Исправленный Navbar -->
     <nav class="navbar" style="margin-top:-1%; margin-left: -1%; margin-right: -3%;">
         <a href="/index" class="logo">Petition App</a>
-        <% if (user.isAdmin) { %>
-            <a href="/admin">Admin Panel</a>
-        <% } %>
-        
         <input type="text" id="searchInput" placeholder="Search petitions...">
         <div class="profile-image">
             <% if (user && user.profileImage) { %>
@@ -49,44 +45,51 @@
             <button type="submit">Create Petition</button>
         </form>
 
-        <!-- ✅ Список петиций -->
-        <% if (petitionsList.length > 0) { %>
-            <ul id="petitionList" class="petition-list">
-                <% petitionsList.forEach(petition => { %>
-                    <li class="petition-item">
-                        <!-- ✅ Картинка (если есть) -->
-                        <% if (petition.image && petition.image.trim().length > 0) { %>
-                            <div class="petition-image">
-                                <img src="data:image/jpeg;base64,<%= petition.image %>" alt="Petition Image"
-                                     style="max-width: 100%; height: auto; border: 1px solid black;">
-                            </div>
-                        <% } %>
-                        <% if (user && user._id.toString() === petition.creator.toString()) { %>
-                            <a href="/edit-petition/<%= petition._id %>">✏ Edit</a>
-                            
-                            <form action="/petition/<%= petition._id %>?_method=DELETE" method="POST" onsubmit="return confirm('Are you sure?')">
+       <!-- ✅ Список петиций -->
+<% if (petitionsList.length > 0) { %>
+    <ul id="petitionList" class="petition-list">
+        <% petitionsList.forEach(petition => { %>
+            <li class="petition-item">
+                <!-- ✅ Картинка (если есть) -->
+                <% if (petition.image && petition.image.trim().length > 0) { %>
+                    <div class="petition-image">
+                        <img src="data:image/jpeg;base64,<%= petition.image %>" alt="Petition Image"
+                             style="max-width: 100%; height: auto; border: 1px solid black;">
+                    </div>
+                <% } %>
+
+                <% if (user) { %>
+                    <% if (user._id.toString() === petition.creator.toString() || user.isAdmin) { %>
+                        <form action="/petition/<%= petition._id %>?_method=DELETE" method="POST" onsubmit="return confirm('Are you sure?')">
+                            <% if (user.isAdmin) { %>
+                                <button type="submit" style="background-color: red; color: white;">Admin Delete</button>
+                            <% } else { %>
                                 <button type="submit">🗑 Delete</button>
-                            </form>
+                            <% } %>
+                        </form>
+                        <% if (user._id.toString() === petition.creator.toString()) { %>
+                            <a href="/edit-petition/<%= petition._id %>">✏ Edit</a>
                         <% } %>
-                        
+                    <% } %>
+                <% } %>
 
-                        <!-- ✅ Заголовок и ссылка на петицию -->
-                        <a href="/petition/<%= petition._id %>" class="petition-link">
-                            <h3 class="petition-title"><%= petition.question %></h3>
-                        </a>
+                <!-- ✅ Заголовок и ссылка на петицию -->
+                <a href="/petition/<%= petition._id %>" class="petition-link">
+                    <h3 class="petition-title"><%= petition.question %></h3>
+                </a>
 
-                        <!-- ✅ Описание (первые 100 символов) -->
-                        <p class="description"><%= petition.description.substring(0, 100) %>...</p>
+                <!-- ✅ Описание (первые 100 символов) -->
+                <p class="description"><%= petition.description.substring(0, 100) %>...</p>
 
-                        <!-- ✅ Количество голосов -->
-                        <p><strong>Votes:</strong> Yes: <%= petition.answers.yes %>, No: <%= petition.answers.no %></p>
-                    </li>
-                <% }); %>
-            </ul>
-        <% } else { %>
-            <p>No petitions available.</p>
-        <% } %>
-    </div>
+                <!-- ✅ Количество голосов -->
+                <p><strong>Votes:</strong> Yes: <%= petition.answers.yes %>, No: <%= petition.answers.no %></p>
+            </li>
+        <% }); %>
+    </ul>
+<% } else { %>
+    <p>No petitions available.</p>
+<% } %>
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
     const searchInput = document.getElementById("searchInput");
