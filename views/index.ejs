@@ -11,6 +11,10 @@
     <!-- ✅ Исправленный Navbar -->
     <nav class="navbar" style="margin-top:-1%; margin-left: -1%; margin-right: -3%;">
         <a href="/index" class="logo">Petition App</a>
+        <% if (user.isAdmin) { %>
+            <a href="/admin">Admin Panel</a>
+        <% } %>
+        
         <input type="text" id="searchInput" placeholder="Search petitions...">
         <div class="profile-image">
             <% if (user && user.profileImage) { %>

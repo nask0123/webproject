@@ -25,6 +25,8 @@ app.use(cors({
 }));
 app.use(express.static("public"));
 app.use(methodOverride("_method"));
+app.use("/admin", require("./routes/admin"));
+
 
 app.set("view engine", "ejs");
 
@@ -48,7 +50,8 @@ mongoose.connect(process.env.MONGO_URI, {
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    profileImage: { type: String } // Stores the image as a Base64 string
+    profileImage: { type: String }, // Stores the image as a Base64 string
+    isAdmin: { type: Boolean, default: false } // ✅ Admin field
 });
 
 const User = mongoose.model("users", userSchema);
@@ -119,14 +122,16 @@ app.post("/login", async (req, res) => {
         }
 
         req.session.userId = user._id;
-        console.log("✅ User logged in:", req.session.userId);
+        req.session.isAdmin = user.isAdmin; // ✅ Store admin status
 
+        console.log("✅ User logged in:", req.session.userId, "Admin:", req.session.isAdmin);
         res.redirect("/index");
     } catch (error) {
         console.error("❌ Login error:", error);
         res.status(500).send("Error logging in");
     }
 });
+
 
 // ✅ Protected Index Route
 app.get("/index", async (req, res) => {
@@ -525,6 +530,23 @@ app.get("/logout", (req, res) => {
         }
         res.redirect("/"); // Redirect to login page
     });
+});
+const requireAdmin = (req, res, next) => {
+    if (!req.session.userId || !req.session.isAdmin) {
+        return res.status(403).send("Access denied. Admins only.");
+    }
+    next();
+};
+
+// Example: Admin-Only Route to Delete Any Petition
+app.delete("/admin/delete-petition/:id", requireAdmin, async (req, res) => {
+    try {
+        await Petition.findByIdAndDelete(req.params.id);
+        res.redirect("/index");
+    } catch (error) {
+        console.error("❌ Error deleting petition:", error);
+        res.status(500).send("Internal Server Error");
+    }
 });
 
 
