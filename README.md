@@ -54,7 +54,7 @@ PORT=5002
 Start the server:
 download file open code and in terminal write
 node js/start.js or node js/lasttry.js
-
+or just enter to https://webproject-jdv7.onrender.com/index
 Access the application at http://localhost:5002
 
 API Endpoints
@@ -89,4 +89,4 @@ GET /logout - Logout user
 
 Deployment
 
-The application is deployed on Render. The frontend is accessible at:
+The application is deployed on Render.
